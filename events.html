@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Maven+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* General styling */
+        body {
+            font-family: 'Maven Pro', sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1, h2 {
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        /* Table styling */
+        table {
+            width: 100%;
+            max-width: 800px;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            vertical-align: middle;
+            word-wrap: break-word;
+        }
+
+        th {
+            background-color: #0073e6;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .actions a {
+            text-decoration: none;
+            font-weight: bold;
+            color: #0073e6;
+        }
+
+        .actions .delete-link {
+            color: #e60000;
+        }
+
+        .actions a:hover, .actions .delete-link:hover {
+            text-decoration: underline;
+        }
+
+        form {
+            margin: 0; /* Remove extra margins for forms inside table cells */
+        }
+
+        select, button {
+            font-size: 0.9rem;
+            padding: 5px;
+        }
+
+        /* Add New Event Form Styling */
+        form.add-event {
+            width: 100%;
+            max-width: 800px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        form.add-event h2 {
+            font-size: 1.8rem;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+
+        form.add-event label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-weight: bold;
+        }
+
+        form.add-event input, form.add-event select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        form.add-event button {
+            background-color: #0073e6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        form.add-event button:hover {
+            background-color: #005bb5;
+        }
+    </style>
+</head>
+<body>
+    <h1>Events Around You</h1>
+
+    <h2>Upcoming Events</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Duration</th>
+                <th>Venue</th>
+                <th>Invited</th>
+                <th>Accepted</th>
+                <th style="width: 200px;">RSVP</th>
+                <th style="width: 150px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for event in events %}
+            <tr>
+                <td>{{ event.description }}</td>
+                <td>{{ event.date }}</td>
+                <td>{{ event.time }}</td>
+                <td>{{ event.duration }} mins</td>
+                <td>{{ event.venue.name }}</td>
+                <td>{{ event.invited_count }}</td>
+                <td>{{ event.accepted_count }}</td>
+                <td>
+                    <form method="post" action="{{ url_for('rsvp_event', event_id=event.event_id) }}">
+                        <select name="rsvp_status">
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                            <option value="maybe">Maybe</option>
+                        </select>
+                        <button type="submit">RSVP</button>
+                    </form>
+                </td>
+                <td class="actions">
+                    <a href="{{ url_for('edit_event', event_id=event.event_id) }}">Edit</a>
+                    <form action="{{ url_for('delete_event', event_id=event.event_id) }}" method="post" style="display:inline;">
+                        <a class="delete-link" onclick="if(confirm('Are you sure?')) this.closest('form').submit();">Delete</a>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <form class="add-event" method="post" action="{{ url_for('create_event') }}">
+        <h2>Add New Event</h2>
+
+        <label for="description">Name:</label>
+        <input type="text" id="description" name="description" required>
+
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date" required>
+
+        <label for="time">Time:</label>
+        <input type="time" id="time" name="time" required>
+
+        <label for="duration">Duration (mins):</label>
+        <input type="number" id="duration" name="duration" min="0" required>
+
+        <label for="invited_count">Number of Invited Attendees:</label>
+        <input type="number" id="invited_count" name="invited_count" min="0" required>
+
+        <label>Venue:</label>
+        <select id="venue_id" name="venue_id">
+            <option value="">Select Venue</option>
+            {% for venue in venues %}
+                <option value="{{ venue.venue_id }}">{{ venue.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="new_venue">Add New Venue:</label>
+        <input type="text" id="new_venue" name="new_venue" placeholder="Enter new venue name">
+
+        <button type="submit">Add Event</button>
+    </form>
+</body>
+</html>

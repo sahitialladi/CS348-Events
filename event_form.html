@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Events</title>
+</head>
+<body>
+    <h2>Create or Edit an Event</h2>
+    <form action="/event" method="post">
+        <input type="hidden" name="event_id" value="{{ event.event_id if event else '' }}">
+
+        <label>Date:</label>
+        <input type="date" name="date" value="{{ event.date if event else '' }}" required><br>
+
+        <label>Time:</label>
+        <input type="time" name="time" value="{{ event.time if event else '' }}" required><br>
+
+        <label>Duration (minutes):</label>
+        <input type="number" name="duration" value="{{ event.duration if event else '' }}" required><br>
+
+        <label>Description:</label>
+        <textarea name="description" required>{{ event.description if event else '' }}</textarea><br>
+
+        <label>Venue:</label>
+        <input list="venue_list" name="venue_name" value="{{ event.venue.name if event and event.venue else '' }}" required>
+        <datalist id="venue_list">
+            {% for venue in venues %}
+                <option value="{{ venue.name }}">{{ venue.name }}</option>
+            {% endfor %}
+        </datalist><br>
+
+        <label>Location:</label>
+        <input type="text" name="venue_location" placeholder="Enter venue location" required><br>
+
+        <label>Capacity:</label>
+        <input type="number" name="venue_capacity" placeholder="Enter venue capacity" required><br>
+
+        <label>Performers:</label>
+        <input list="performer_list" name="performer_names" placeholder="Add performers, separated by commas"
+       value="{% if event and event.performers %}{{ event.performers | map(attribute='name') | join(', ') }}{% endif %}">
+
+        <datalist id="performer_list">
+            {% for performer in performers %}
+                <option value="{{ performer.name }}">{{ performer.name }}</option>
+            {% endfor %}
+        </datalist><br>
+
+        <button type="submit">Save</button>
+    </form>
+
+    <h3>Existing Events</h3>
+    <table border="1">
+        <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Duration</th>
+            <th>Description</th>
+            <th>Venue</th>
+            <th>Performers</th>
+            <th>Actions</th>
+        </tr>
+        {% for event in events %}
+            <tr>
+                <td>{{ event.date }}</td>
+                <td>{{ event.time }}</td>
+                <td>{{ event.duration }} minutes</td>
+                <td>{{ event.description }}</td>
+                <td>{{ event.venue.name if event.venue else 'No Venue Assigned' }}</td>
+                <td>
+                    {% if event.performers %}
+                        {{ event.performers | map(attribute='name') | join(', ') }}
+                    {% else %}
+                        No Performers Assigned
+                    {% endif %}
+
+                </td>
+                <td>
+                    <a href="{{ url_for('edit_event', id=event.event_id) }}">Edit</a>
+
+                    <form action="{{ url_for('delete_event', id=event.event_id) }}" method="post" style="display:inline;">
+                        <button type="submit" onclick="return confirm('Are you sure you want to delete this event?');">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

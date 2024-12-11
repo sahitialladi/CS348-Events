@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head><title>Create Event</title></head>
+<body>
+    <h1>Create Event</h1>
+    <form method="post" action="{{ url_for('create_event') }}">
+        Date: <input type="date" name="date"><br>
+        Time: <input type="time" name="time"><br>
+        Duration: <input type="number" name="duration"><br>
+        Description: <textarea name="description"></textarea><br>
+        Venue:
+        <select name="venue_id">
+            {% for venue in venues %}
+                <option value="{{ venue.venue_id }}">{{ venue.name }}</option>
+            {% endfor %}
+        </select><br>
+        <input type="submit" value="Create Event">
+    </form>
+</body>
+</html>
